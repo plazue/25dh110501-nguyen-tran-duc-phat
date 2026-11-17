@@ -1,0 +1,225 @@
+﻿@model IEnumerable<BE1.Models.Order>
+
+@{
+    ViewBag.Title = "Lịch sử mua hàng";
+    Layout = "~/Areas/Customer/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<div class="history-wrap">
+    <div class="history-header">
+        <h1>Lịch sử mua hàng của bạn</h1>
+        <a href="@Url.Action("ProductList", "Home1", new { area = "Customer" })" class="btn-detail"><i class="fa-solid fa-arrow-left"></i> Tiếp tục mua sắm</a>
+    </div>
+
+    <div id="orderHistoryList">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var order in Model)
+            {
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <span class="order-code">Đơn hàng #@order.OrderID</span>
+                        <span class="order-date"><i class="fa-regular fa-clock"></i> @string.Format("{0:dd/MM/yyyy HH:mm}", order.OrderDate)</span>
+                    </div>
+
+                    <div class="order-items-preview">
+                        @if (order.OrderDetails != null && order.OrderDetails.Any())
+                        {
+                            foreach (var detail in order.OrderDetails)
+                            {
+                                <div class="preview-item">
+                                    <img src="@Url.Content(!string.IsNullOrEmpty(detail.Product?.ProductImage) ? detail.Product.ProductImage : "~/Content/image2/thumb.jpg")" class="preview-img" alt="@(detail.Product?.ProductName ?? "Sản phẩm")">
+                                    <div class="preview-info">
+                                        <div class="preview-name">@(detail.Product?.ProductName ?? "Sản phẩm không tồn tại")</div>
+                                        <div class="preview-qty">Số lượng: @detail.Quantity | Đơn giá: @string.Format("{0:N0} ₫", detail.UnitPrice)</div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <div class="order-card-footer">
+                        <div class="order-total">
+                            Trạng thái: <span style="color: #2563eb; font-weight: 700;">@(string.IsNullOrEmpty(order.PaymentStatus) ? "Chưa thanh toán" : order.PaymentStatus)</span>
+                            | Tổng tiền: <span style="color: #dc2626;">@string.Format("{0:N0} ₫", order.TotalAmount)</span>
+                        </div>
+                        <a href="@Url.Action("Details", "Order", new { area = "Customer", id = order.OrderID })" class="btn-detail">Xem chi tiết</a>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-history">
+                <i class="fa-solid fa-box-open"></i>
+                <p>Bạn chưa có đơn hàng nào trong hệ thống.</p>
+                <a href="@Url.Action("ProductList", "Home1", new { area = "Customer" })" class="btn-detail">Mua sắm ngay</a>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .history-wrap {
+        width: min(1180px, 92%);
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+        min-height: 70vh;
+        color: #1e293b;
+        background-image: url("/content/image2/6.jpg");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        border-radius: 16px;
+    }
+
+    .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+        .history-header h1 {
+            font-size: clamp(26px, 3vw, 34px);
+            font-weight: 800;
+            color: #0f172a;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+            margin: 0;
+        }
+
+    .order-card {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 22px 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        border: 1px solid #cbd5e1;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.15);
+        }
+
+    .order-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 12px;
+        margin-bottom: 15px;
+    }
+
+    .order-code {
+        font-weight: 700;
+        font-size: 16px;
+        color: #2563eb;
+    }
+
+    .order-date {
+        font-size: 13px;
+        color: #475569;
+        font-weight: 600;
+    }
+
+    .order-items-preview {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .preview-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .preview-img {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+        padding: 4px;
+    }
+
+    .preview-info {
+        flex: 1;
+    }
+
+    .preview-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 2px;
+    }
+
+    .preview-qty {
+        font-size: 13px;
+        color: #475569;
+        font-weight: 600;
+    }
+
+    .order-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 14px;
+    }
+
+    .order-total {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .btn-detail {
+        background-color: #2563eb;
+        color: #fff;
+        padding: 9px 18px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+        transition: background 0.2s, transform 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+        .btn-detail:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-1px);
+            color: #fff;
+        }
+
+    .empty-history {
+        text-align: center;
+        padding: 60px 20px;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        border: 1px solid #cbd5e1;
+    }
+
+        .empty-history i {
+            font-size: 50px;
+            color: #2563eb;
+            margin-bottom: 16px;
+        }
+
+        .empty-history p {
+            font-size: 16px;
+            color: #334155;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+</style>

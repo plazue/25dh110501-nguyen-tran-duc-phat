@@ -1,0 +1,394 @@
+﻿@model IEnumerable<BE1.Models.Order>
+
+@{
+    ViewBag.Title = "Đơn hàng của tôi";
+    Layout = "~/Areas/Customer/Views/Shared/_CustomerLayout.cshtml";
+    string currentStatus = ViewBag.SelectedStatus as string ?? "Tất cả";
+}
+
+<div class="history-wrap">
+
+    <div class="page-header">
+        <h1>Đơn hàng của tôi</h1>
+    </div>
+
+    <div class="order-tabs">
+        <a href="@Url.Action("MyOrder", new { area = "Customer", status = "Tất cả" })" class="@(currentStatus == "Tất cả" ? "active" : "")">Tất cả đơn</a>
+        <a href="@Url.Action("MyOrder", new { area = "Customer", status = "Chờ thanh toán" })" class="@(currentStatus == "Chờ thanh toán" ? "active" : "")">Chờ thanh toán</a>
+        <a href="@Url.Action("MyOrder", new { area = "Customer", status = "Chờ xử lý" })" class="@(currentStatus == "Chờ xử lý" ? "active" : "")">Chờ xử lý</a>
+        <a href="@Url.Action("MyOrder", new { area = "Customer", status = "Đã xử lý" })" class="@(currentStatus == "Đã xử lý" ? "active" : "")">Đã xử lý</a>
+        <a href="@Url.Action("MyOrder", new { area = "Customer", status = "Đang vận chuyển" })" class="@(currentStatus == "Đang vận chuyển" ? "active" : "")">Đang vận chuyển</a>
+        <a href="@Url.Action("MyOrder", new { area = "Customer", status = "Đã giao" })" class="@(currentStatus == "Đã giao" ? "active" : "")">Đã giao</a>
+        <a href="@Url.Action("MyOrder", new { area = "Customer", status = "Đã hủy" })" class="@(currentStatus == "Đã hủy" ? "active" : "")">Đã hủy</a>
+    </div>
+
+
+    <div class="order-search-bar">
+        <form method="get" action="@Url.Action("MyOrder", "Order", new { area = "Customer" })" class="search-form-flex">
+            <input type="hidden" name="status" value="@currentStatus" />
+            <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Tìm đơn hàng theo Mã đơn hàng hoặc Tên sản phẩm..." class="search-input-field" />
+            </div>
+            <button type="submit" class="search-submit-btn">Tìm đơn hàng</button>
+        </form>
+    </div>
+
+    <div class="order-list-container">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var order in Model)
+            {
+                <div class="order-card-box">
+                  
+                    <div class="order-status-header">
+                        <i class="fa-solid fa-box-archive"></i>
+                        <span>@(string.IsNullOrEmpty(order.PaymentStatus) ? "Đang xử lý" : order.PaymentStatus)</span>
+                    </div>
+
+                    
+                    <div class="order-items-list">
+                        @if (order.OrderDetails != null && order.OrderDetails.Any())
+                        {
+                            foreach (var detail in order.OrderDetails)
+                            {
+                                <div class="order-item-row">
+                                    <div class="item-img-wrapper">
+                                        <img src="@Url.Content(!string.IsNullOrEmpty(detail.Product?.ProductImage) ? detail.Product.ProductImage.Split(',')[0] : "~/Content/image2/thumb.jpg")" alt="Product" />
+                                        <span class="item-qty-badge">x@(detail.Quantity)</span>
+                                    </div>
+                                    <div class="item-info-col">
+                                        <div class="item-title">@(detail.Product?.ProductName ?? "Sản phẩm Lubu Store")</div>
+                                        <div class="item-shop-name"><i class="fa-solid fa-store"></i> Lubu Store Official</div>
+                                    </div>
+                                    <div class="item-price-col">
+                                        @string.Format("{0:N0} ₫", detail.UnitPrice)
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <!-- Phần tổng tiền và các nút thao tác -->
+                    <div class="order-card-bottom">
+                        <div class="order-total-display">
+                            Tổng tiền: <strong>@string.Format("{0:N0} ₫", order.TotalAmount)</strong>
+                        </div>
+                        <div class="order-action-buttons">
+                            <a href="@Url.Action("Reorder", "Cart", new { area = "Customer", orderId = order.OrderID })" class="btn-action btn-reorder">Mua lại</a>
+                            <a href="@Url.Action("Details", "Order", new { area = "Customer", id = order.OrderID })" class="btn-action btn-detail">Xem chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-order-box">
+                <i class="fa-solid fa-box-open"></i>
+                <h2>BẠN CHƯA CÓ ĐƠN HÀNG NÀO. HÃY ĐẶT ĐƠN NGAY.</h2>
+                <p>Khám phá kho thiết bị gaming gear và chọn sản phẩm yêu thích của bạn.</p>
+                <a href="@Url.Action("ProductList", "Home1", new { area = "Customer" })" class="btn-action btn-detail" style="display:inline-block; padding: 10px 24px; margin-top: 10px;">Mua sắm ngay</a>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .history-wrap {
+
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+        min-height: 70vh;
+        color: #1e293b;
+        background-image: url("/content/image2/8.png");
+        background-size: cover;
+        background-position: center;
+ 
+   
+    }
+
+    .page-header h1 {
+        font-size: clamp(26px, 3vw, 32px);
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 20px;
+        text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+    }
+
+    /* Tabs trạng thái */
+    .order-tabs {
+        display: flex;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+        .order-tabs a {
+            flex: 1;
+            text-align: center;
+            padding: 14px 10px;
+            text-decoration: none;
+            color: #334155;
+            font-size: 14px;
+            font-weight: 700;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+            .order-tabs a:hover {
+                color: #2563eb;
+                background: #f8fafc;
+            }
+
+            .order-tabs a.active {
+                color: #2563eb;
+                border-bottom-color: #2563eb;
+                background: #fff;
+            }
+
+    /* Thanh tìm kiếm */
+    .order-search-bar {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 14px 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    .search-form-flex {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .search-input-wrap {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 0 14px;
+    }
+
+        .search-input-wrap i {
+            color: #64748b;
+        }
+
+    .search-input-field {
+        width: 100%;
+        border: none;
+        padding: 10px 0;
+        outline: none;
+        font-size: 14px;
+        background: transparent;
+        color: #0f172a;
+    }
+
+    .search-submit-btn {
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .search-submit-btn:hover {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+
+    /* Thẻ đơn hàng */
+    .order-card-box {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        border: 1px solid #cbd5e1;
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .order-status-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 750;
+        color: #0f172a;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+
+        .order-status-header i {
+            color: #2563eb;
+        }
+
+    .order-items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    .order-item-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .item-img-wrapper {
+        position: relative;
+        width: 70px;
+        height: 70px;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        flex-shrink: 0;
+    }
+
+        .item-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+    .item-qty-badge {
+        position: absolute;
+        bottom: -4px;
+        right: -4px;
+        background: #64748b;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 1px 6px;
+        border-radius: 4px;
+    }
+
+    .item-info-col {
+        flex: 1;
+    }
+
+    .item-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .item-shop-name {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .item-price-col {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    /* Phần chân thẻ đơn hàng */
+    .order-card-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 16px;
+    }
+
+    .order-total-display {
+        font-size: 15px;
+        color: #334155;
+    }
+
+        .order-total-display strong {
+            font-size: 18px;
+            color: #dc2626;
+            margin-left: 6px;
+        }
+
+    .order-action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action {
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-reorder {
+        background: #fff;
+        color: #2563eb;
+        border: 1px solid #2563eb;
+    }
+
+        .btn-reorder:hover {
+            background: #eff6ff;
+        }
+
+    .btn-detail {
+        background: #2563eb;
+        color: #fff;
+        border: 1px solid #2563eb;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+        .btn-detail:hover {
+            background: #1d4ed8;
+            color: #fff;
+        }
+
+    /* Trạng thái trống */
+    .empty-order-box {
+        text-align: center;
+        padding: 60px 20px;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        border: 1px solid #cbd5e1;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+        .empty-order-box i {
+            font-size: 50px;
+            color: #2563eb;
+            margin-bottom: 16px;
+        }
+
+        .empty-order-box h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .empty-order-box p {
+            font-size: 14px;
+            color: #475569;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+</style>

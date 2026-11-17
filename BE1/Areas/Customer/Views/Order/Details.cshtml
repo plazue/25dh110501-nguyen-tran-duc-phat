@@ -1,0 +1,102 @@
+﻿@model BE1.Models.Order
+
+@{
+    ViewBag.Title = "Chi tiết hóa đơn #" + (Model != null ? Model.OrderID : 0);
+    Layout = "~/Areas/Customer/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<div class="order-detail-wrap">
+    <!-- Nút quay lại -->
+    <div class="detail-back-link">
+        <a href="@Url.Action("MyOrder", "Order", new { area = "Customer" })">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại Đơn hàng của tôi
+        </a>
+    </div>
+
+    <!-- Nội dung chi tiết hóa đơn -->
+    <div class="detail-content-box">
+        @Html.Partial("~/Areas/Customer/Views/Shared/_OrderDetailContent.cshtml", Model)
+    </div>
+
+ 
+    @if (Model != null && (Model.PaymentStatus == "Chờ thanh toán" || Model.PaymentStatus == "Đã xử lý" ||  Model.PaymentStatus == "Chờ xử lý" || Model.PaymentStatus == "Đang giao hàng"))
+    {
+        using (Html.BeginForm("CancelOrder", "Order", new { area = "Customer", id = Model.OrderID }, FormMethod.Post, new { @class = "cancel-form-section" }))
+        {
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn-admin-cancel" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                <i class="fa-solid fa-ban"></i> Hủy đơn hàng
+            </button>
+        }
+    }
+</div>
+
+<style>
+    .order-detail-wrap {
+        width: min(900px, 92%);
+        margin: 40px auto;
+        padding: 40px 20px 60px;
+        min-height: 70vh;
+        color: #1e293b;
+        background-image: url("/content/image2/6.jpg");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        border-radius: 16px;
+    }
+
+    .detail-back-link {
+        margin-bottom: 20px;
+    }
+
+        .detail-back-link a {
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: 700;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+
+            .detail-back-link a:hover {
+                color: #1d4ed8;
+            }
+
+    .detail-content-box {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        border: 1px solid #cbd5e1;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+    }
+
+    .cancel-form-section {
+        margin-top: 20px;
+        text-align: right;
+    }
+
+    .btn-admin-cancel {
+        background-color: #dc2626;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s, transform 0.2s;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+
+        .btn-admin-cancel:hover {
+            background-color: #b91c1c;
+            transform: translateY(-1px);
+        }
+</style>
